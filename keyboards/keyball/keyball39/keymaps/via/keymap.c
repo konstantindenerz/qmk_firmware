@@ -20,42 +20,103 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "quantum.h"
 
-// clang-format off
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-  // keymap for default (VIA)
-  [0] = LAYOUT_universal(
-    KC_Q     , KC_W     , KC_E     , KC_R     , KC_T     ,                            KC_Y     , KC_U     , KC_I     , KC_O     , KC_P     ,
-    KC_A     , KC_S     , KC_D     , KC_F     , KC_G     ,                            KC_H     , KC_J     , KC_K     , KC_L     , KC_MINS  ,
-    KC_Z     , KC_X     , KC_C     , KC_V     , KC_B     ,                            KC_N     , KC_M     , KC_COMM  , KC_DOT   , KC_SLSH  ,
-    KC_LCTL  , KC_LGUI  , KC_LALT  ,LSFT_T(KC_LNG2),LT(1,KC_SPC),LT(3,KC_LNG1),KC_BSPC,LT(2,KC_ENT),LSFT_T(KC_LNG2),KC_RALT,KC_RGUI, KC_RSFT
-  ),
-
-  [1] = LAYOUT_universal(
-    KC_F1    , KC_F2    , KC_F3    , KC_F4    , KC_RBRC  ,                            KC_F6    , KC_F7    , KC_F8    , KC_F9    , KC_F10   ,
-    KC_F5    , KC_EXLM  , S(KC_6)  ,S(KC_INT3), S(KC_8)  ,                           S(KC_INT1), KC_BTN1  , KC_PGUP  , KC_BTN2  , KC_SCLN  ,
-    S(KC_EQL),S(KC_LBRC),S(KC_7)   , S(KC_2)  ,S(KC_RBRC),                            KC_LBRC  , KC_DLR   , KC_PGDN  , KC_BTN3  , KC_F11   ,
-    KC_INT1  , KC_EQL   , S(KC_3)  , _______  , _______  , _______  ,      TO(2)    , TO(0)    , _______  , KC_RALT  , KC_RGUI  , KC_F12
-  ),
-
-  [2] = LAYOUT_universal(
-    KC_TAB   , KC_7     , KC_8     , KC_9     , KC_MINS  ,                            KC_NUHS  , _______  , KC_BTN3  , _______  , KC_BSPC  ,
-   S(KC_QUOT), KC_4     , KC_5     , KC_6     ,S(KC_SCLN),                            S(KC_9)  , KC_BTN1  , KC_UP    , KC_BTN2  , KC_QUOT  ,
-    KC_SLSH  , KC_1     , KC_2     , KC_3     ,S(KC_MINS),                           S(KC_NUHS), KC_LEFT  , KC_DOWN  , KC_RGHT  , _______  ,
-    KC_ESC   , KC_0     , KC_DOT   , KC_DEL   , KC_ENT   , KC_BSPC  ,      _______  , _______  , _______  , _______  , _______  , _______
-  ),
-
-  [3] = LAYOUT_universal(
-    RGB_TOG  , AML_TO   , AML_I50  , AML_D50  , _______  ,                            _______  , _______  , SSNP_HOR , SSNP_VRT , SSNP_FRE ,
-    RGB_MOD  , RGB_HUI  , RGB_SAI  , RGB_VAI  , SCRL_DVI ,                            _______  , _______  , _______  , _______  , _______  ,
-    RGB_RMOD , RGB_HUD  , RGB_SAD  , RGB_VAD  , SCRL_DVD ,                            CPI_D1K  , CPI_D100 , CPI_I100 , CPI_I1K  , KBC_SAVE ,
-    QK_BOOT  , KBC_RST  , _______  , _______  , _______  , _______  ,      _______  , _______  , _______  , _______  , KBC_RST  , QK_BOOT
-  ),
+// Define Combos
+enum combos {
+    ESC_COMBO,
+    TAB_COMBO,
+    COMBO_LENGTH
 };
+
+// Combo key positions
+const uint16_t PROGMEM esc_combo[] = {KC_Q, KC_W, COMBO_END};
+const uint16_t PROGMEM tab_combo[] = {KC_A, KC_R, COMBO_END};
+
+// Combo actions
+combo_t key_combos[COMBO_LENGTH] = {
+    [ESC_COMBO] = COMBO(esc_combo, KC_ESC),
+    [TAB_COMBO] = COMBO(tab_combo, KC_TAB),
+};
+
+// Layer definitions
+enum layers {
+    _COLEMAK,
+    _NAV,
+    _SYM,
+    _FUN,
+    _NUMB,
+    _MOUSE
+};
+
+// Custom keycodes
+enum custom_keycodes {
+    COLEMAK = SAFE_RANGE
+};
+
+
+#define NAV MO(_NAV)
+#define SYM MO(_SYM)
+#define FUN MO(_FUN)
+#define NUMB MO(_NUMB)
+#define MOUSE MO(_MOUSE)
+
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+
+  /* Colemak Layer with Mod-Tap*/
+  [_COLEMAK] = LAYOUT(
+    KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                      KC_J,    KC_L,    KC_U,    KC_Y,    KC_QUOT,
+    MT(MOD_LGUI, KC_A), MT(MOD_LCTL, KC_R), MT(MOD_LALT, KC_S), MT(MOD_LSFT, KC_T), KC_G,    KC_M,    KC_N,    KC_E,    KC_I,    KC_O,
+    MT(NAV, KC_Z),     KC_X,    KC_C,    KC_D,    KC_V,                      KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH,
+    _______, _______, _______, NAV,     KC_LSFT,   MOUSE,            KC_SPC, SYM, _______
+  ),
+
+  [_NAV] = LAYOUT(
+    KC_ESC,  OSM(MOD_LALT), OSM(MOD_LCTL), LALT(KC_RIGHT), KC_INS,  KC_PGUP, KC_PGDN, KC_HOME, KC_END,  KC_CAPS,
+    OSM(MOD_LALT), OSM(MOD_LGUI), OSM(MOD_LSFT), OSM(MOD_LCTL), OSM(MOD_RALT), KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, KC_DEL,
+    LGUI(KC_Z), LGUI(KC_X), LGUI(KC_C), LGUI(KC_V), KC_LGUI,   KC_ENT,  KC_BSPC, KC_TAB,  KC_APP,  KC_PSCR,
+    _______, _______, _______, _______, _______, _______,  KC_ENT,    FUN,     _______
+  ),
+
+  /* Symbol Layer
+   * Symbols and special characters.
+   */
+  [_SYM] = LAYOUT(
+    KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,        KC_EQL,   KC_GRV,   KC_COLN, KC_SCLN, KC_PLUS,
+    OSM(MOD_LALT), OSM(MOD_LGUI), OSM(MOD_LSFT), OSM(MOD_LCTL), KC_CIRC, KC_ASTR,  KC_LPRN,  KC_LBRC, KC_LCBR, KC_MINS,
+    _______, _______, KC_BSLS, KC_PIPE, KC_AMPR,        KC_TILD,  KC_RPRN,  KC_RBRC, KC_RCBR, KC_UNDS,
+    _______, _______, _______, _______, _______,        _______,  _______,  _______, _______
+  ),
+
+  /* Function Layer
+   * Media controls and function keys.
+   */
+  [_FUN] = LAYOUT(
+    KC_MSTP, KC_MPRV, KC_MPLY, KC_MNXT, KC_BRIU,        KC_F12,   KC_F7,    KC_F8,   KC_F9,   TO(_COLEMAK),
+    OSM(MOD_LALT), OSM(MOD_LGUI), OSM(MOD_LSFT), OSM(MOD_LCTL), KC_BRID, KC_F11,   KC_F4,    KC_F5,   KC_F6,   TO(_NAV),
+    KC_MUTE, KC_VOLD, KC_VOLU, KC_NO,   KC_NO,          KC_F10,   KC_F1,    KC_F2,   KC_F3,   _______,
+    _______, _______, _______, _______, _______,        _______,  _______,  _______, _______
+  ),
+
+  /* Numeric Layer */
+  [_NUMB] = LAYOUT(
+    _______, _______, _______, _______, _______,        KC_EQL,   KC_7,     KC_8,    KC_9,    KC_PLUS,
+    OSM(MOD_LALT), OSM(MOD_LGUI), OSM(MOD_LSFT), OSM(MOD_LCTL), _______, KC_ASTR,  KC_4,     KC_5,    KC_6,    KC_MINS,
+    _______, _______, _______, _______, _______,        KC_0,     KC_1,     KC_2,    KC_3,    KC_SLSH,
+    _______, _______, _______, _______, _______,        _______,  _______,  _______, _______
+  ),
+
+  /* Mouse Layer */
+  [_MOUSE] = LAYOUT(
+    _______, _______, _______, _______ , _______,        _______,  _______,  _______, _______, _______,
+    _______, KC_MS_L, KC_MS_U, KC_MS_R, _______,        KC_WH_U,  KC_BTN1,  KC_BTN2, KC_BTN3, _______,
+    _______, _______, KC_MS_U, _______, _______,        KC_WH_D,  KC_BTN4,  KC_BTN5, _______, _______,
+    _______, _______, _______, _______, _______,        _______,  _______,  _______, _______
+  )
+};
+
 // clang-format on
 
 layer_state_t layer_state_set_user(layer_state_t state) {
-    // Auto enable scroll mode when the highest layer is 3
-    keyball_set_scroll_mode(get_highest_layer(state) == 3);
+    keyball_set_scroll_mode(get_highest_layer(state) == _MOUSE);
     return state;
 }
 
